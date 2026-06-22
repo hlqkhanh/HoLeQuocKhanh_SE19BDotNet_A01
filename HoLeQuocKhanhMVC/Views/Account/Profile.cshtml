@@ -1,0 +1,144 @@
+@model BusinessObjects.SystemAccount
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card-premium">
+                <div class="card-header-premium">
+                    <h3 class="m-0"><i class="bi bi-person-circle"></i> Edit Profile</h3>
+                    <span class="badge-custom badge-custom-role-staff">Staff Account</span>
+                </div>
+                <div class="p-4">
+                    @if (ViewBag.Message != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @ViewBag.Message
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Profile" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="AccountId" />
+
+                        <div class="text-danger mb-3">
+                            @Html.ValidationSummary(true)
+                        </div>
+
+                        <div class="form-group text-start">
+                            <label asp-for="AccountName" class="form-label font-title fw-semibold text-dark">Full Name</label>
+                            <input asp-for="AccountName" class="form-control form-control-custom" placeholder="Enter your full name" required />
+                            <span asp-validation-for="AccountName" class="text-danger" style="font-size: 0.85rem;"></span>
+                        </div>
+
+                        <div class="form-group text-start mb-4">
+                            <label asp-for="AccountEmail" class="form-label font-title fw-semibold text-dark">Email Address</label>
+                            <input asp-for="AccountEmail" class="form-control form-control-custom" type="email" placeholder="Enter your email" required />
+                            <span asp-validation-for="AccountEmail" class="text-danger" style="font-size: 0.85rem;"></span>
+                        </div>
+
+                        <!-- Change Password Toggle Button -->
+                        <div class="mb-4">
+                            <button type="button" id="btnTogglePassword" class="btn btn-premium btn-premium-secondary w-100">
+                                <i class="bi bi-key"></i> Change Password
+                            </button>
+                        </div>
+
+                        <!-- Collapsible Password Input -->
+                        <div id="passwordGroup" class="card-premium p-4 bg-light mb-4" style="display: none; border-style: dashed;">
+                            <h6 class="font-title fw-bold text-dark mb-3"><i class="bi bi-shield-lock"></i> Change Password Section</h6>
+                            
+                            <div id="passwordError" class="alert alert-danger d-none" style="font-size: 0.9rem;"></div>
+                            <div id="passwordSuccess" class="alert alert-success d-none" style="font-size: 0.9rem;"></div>
+
+                            <div class="form-group text-start mb-3">
+                                <label for="oldPasswordInput" class="form-label font-title fw-semibold text-dark">Old Password</label>
+                                <input type="password" id="oldPasswordInput" class="form-control form-control-custom" placeholder="Enter old password" />
+                            </div>
+
+                            <div class="form-group text-start mb-3">
+                                <label for="newPasswordInput" class="form-label font-title fw-semibold text-dark">New Password</label>
+                                <input type="password" id="newPasswordInput" class="form-control form-control-custom" placeholder="Enter new password" />
+                            </div>
+
+                            <button type="button" id="btnUpdatePassword" class="btn btn-premium btn-premium-primary w-100">
+                                <i class="bi bi-check-circle"></i> Update Password
+                            </button>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="@Url.Action("Index", "News")" class="btn btn-premium btn-premium-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to News
+                            </a>
+                            <button type="submit" class="btn btn-premium btn-premium-primary">
+                                <i class="bi bi-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            $('#btnTogglePassword').click(function() {
+                $('#passwordGroup').slideToggle(200, function() {
+                    if ($('#passwordGroup').is(':visible')) {
+                        $('#oldPasswordInput').focus();
+                        $('#btnTogglePassword').html('<i class="bi bi-x-circle"></i> Cancel Password Change');
+                    } else {
+                        $('#oldPasswordInput').val('');
+                        $('#newPasswordInput').val('');
+                        $('#passwordError').addClass('d-none').text('');
+                        $('#passwordSuccess').addClass('d-none').text('');
+                        $('#btnTogglePassword').html('<i class="bi bi-key"></i> Change Password');
+                    }
+                });
+            });
+
+            $('#btnUpdatePassword').click(function() {
+                var oldPwd = $('#oldPasswordInput').val();
+                var newPwd = $('#newPasswordInput').val();
+
+                if (!oldPwd || !newPwd) {
+                    $('#passwordError').text("Both old and new passwords are required.").removeClass('d-none');
+                    $('#passwordSuccess').addClass('d-none');
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("ChangePassword", "Account")',
+                    type: 'POST',
+                    data: {
+                        oldPassword: oldPwd,
+                        newPassword: newPwd,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#passwordSuccess').text(response.message).removeClass('d-none');
+                            $('#passwordError').addClass('d-none');
+                            $('#oldPasswordInput').val('');
+                            $('#newPasswordInput').val('');
+                        } else {
+                            $('#passwordError').text(response.message).removeClass('d-none');
+                            $('#passwordSuccess').addClass('d-none');
+                        }
+                    },
+                    error: function() {
+                        $('#passwordError').text("An error occurred while updating the password.").removeClass('d-none');
+                        $('#passwordSuccess').addClass('d-none');
+                    }
+                });
+            });
+        });
+    </script>
+}

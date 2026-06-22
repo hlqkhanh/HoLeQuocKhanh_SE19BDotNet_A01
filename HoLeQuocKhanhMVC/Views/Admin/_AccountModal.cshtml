@@ -1,0 +1,97 @@
+@model BusinessObjects.SystemAccount
+
+<div class="modal-header modal-header-custom">
+    <h5 class="modal-title font-title fw-bold" id="accountModalLabel">
+        @(ViewBag.IsEdit ? "Edit System Account" : "Create System Account")
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<form id="accountForm" asp-action="SaveAccount" asp-controller="Admin" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="isEdit" value="@(ViewBag.IsEdit ? "true" : "false")" />
+
+    <div class="modal-body p-4 text-start">
+        <div id="modalError" class="alert alert-danger d-none"></div>
+
+        <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+
+        <div class="form-group">
+            <label asp-for="AccountId" class="form-label font-title fw-semibold">Account ID</label>
+            @if (ViewBag.IsEdit)
+            {
+                <input asp-for="AccountId" class="form-control form-control-custom bg-light" readonly type="number" required />
+            }
+            else
+            {
+                <input asp-for="AccountId" class="form-control form-control-custom" type="number" placeholder="Enter custom integer ID" required />
+            }
+            <span asp-validation-for="AccountId" class="text-danger" style="font-size: 0.85rem;"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="AccountName" class="form-label font-title fw-semibold">Full Name</label>
+            <input asp-for="AccountName" class="form-control form-control-custom" placeholder="e.g. John Doe" required />
+            <span asp-validation-for="AccountName" class="text-danger" style="font-size: 0.85rem;"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="AccountEmail" class="form-label font-title fw-semibold">Email Address</label>
+            <input asp-for="AccountEmail" class="form-control form-control-custom" type="email" placeholder="john.doe@funewsmanagementsystem.org" required />
+            <span asp-validation-for="AccountEmail" class="text-danger" style="font-size: 0.85rem;"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="AccountPassword" class="form-label font-title fw-semibold">Password</label>
+            <input asp-for="AccountPassword" type="password" class="form-control form-control-custom" placeholder="••••••••" required />
+            <span asp-validation-for="AccountPassword" class="text-danger" style="font-size: 0.85rem;"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="AccountRole" class="form-label font-title fw-semibold">Account Role</label>
+            <select asp-for="AccountRole" class="form-select form-control-custom" required>
+                <option value="">-- Select Role --</option>
+                <option value="1">Staff</option>
+                <option value="2">Lecturer</option>
+            </select>
+            <span asp-validation-for="AccountRole" class="text-danger" style="font-size: 0.85rem;"></span>
+        </div>
+    </div>
+
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-premium btn-premium-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-premium btn-premium-primary">
+            <i class="bi bi-check-lg"></i> Save Account
+        </button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        // Handle AJAX Form Submit inside modal
+        $('#accountForm').on('submit', function (e) {
+            e.preventDefault();
+            var form = $(this);
+            
+            $.ajax({
+                url: form.attr('action'),
+                type: form.attr('method'),
+                data: form.serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        $('#accountModal').modal('hide');
+                        location.reload();
+                    } else if (response.message) {
+                        $('#modalError').text(response.message).removeClass('d-none');
+                    } else {
+                        // If it returns partial view HTML (meaning validation errors)
+                        $('#accountModalContent').html(response);
+                    }
+                },
+                error: function () {
+                    $('#modalError').text("An error occurred. Please try again.").removeClass('d-none');
+                }
+            });
+        });
+    });
+</script>

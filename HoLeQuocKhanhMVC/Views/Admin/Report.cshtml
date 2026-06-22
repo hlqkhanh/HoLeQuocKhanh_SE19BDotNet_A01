@@ -1,0 +1,121 @@
+@model IEnumerable<BusinessObjects.NewsArticle>
+
+@{
+    ViewData["Title"] = "Report Statistics";
+    var activeCount = Model.Count(a => a.NewsStatus == true);
+    var inactiveCount = Model.Count(a => a.NewsStatus == false);
+}
+
+<div class="container mt-2">
+    <div class="mb-4">
+        <h1 class="fw-bold m-0"><i class="bi bi-bar-chart-line text-primary"></i> News Report Statistics</h1>
+        <p class="text-muted m-0">Generate statistics on articles published over a selected time period</p>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card-premium p-4 mb-4">
+        <form method="get" action="@Url.Action("Report", "Admin")" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="startDate" class="form-label font-title fw-semibold">Start Date</label>
+                <input type="date" id="startDate" name="startDate" value="@ViewBag.StartDate" class="form-control form-control-custom" />
+            </div>
+            <div class="col-md-4">
+                <label for="endDate" class="form-label font-title fw-semibold">End Date</label>
+                <input type="date" id="endDate" name="endDate" value="@ViewBag.EndDate" class="form-control form-control-custom" />
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-premium btn-premium-primary flex-grow-1">
+                    <i class="bi bi-funnel"></i> Generate Report
+                </button>
+                <a href="@Url.Action("Report", "Admin")" class="btn btn-premium btn-premium-secondary">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Summary Metrics -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card-premium p-4 text-center">
+                <div class="text-muted font-title fw-semibold mb-1" style="font-size: 0.9rem;">Total Articles</div>
+                <h2 class="fw-bold text-dark m-0">@Model.Count()</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card-premium p-4 text-center border-start border-dark border-4">
+                <div class="text-muted font-title fw-semibold mb-1" style="font-size: 0.9rem;">Active / Published</div>
+                <h2 class="fw-bold text-dark m-0">@activeCount</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card-premium p-4 text-center border-start border-secondary border-4">
+                <div class="text-muted font-title fw-semibold mb-1" style="font-size: 0.9rem;">Inactive / Drafts</div>
+                <h2 class="fw-bold text-dark m-0">@inactiveCount</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    @if (!Model.Any())
+    {
+        <div class="card-premium p-5 text-center my-4">
+            <i class="bi bi-graph-down display-1 text-muted"></i>
+            <h3 class="mt-3 font-title fw-semibold">No Articles in date range</h3>
+            <p class="text-muted">Adjust your start or end date filters above to generate data.</p>
+        </div>
+    }
+    else
+    {
+        <div class="card-premium p-0 mb-5 overflow-hidden">
+            <div class="p-4 bg-light border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="m-0 font-title fw-bold">Report Results (Sorted by Created Date Descending)</h5>
+                <button onclick="window.print()" class="btn btn-premium btn-premium-secondary btn-sm">
+                    <i class="bi bi-printer"></i> Print Report
+                </button>
+            </div>
+            <div class="table-responsive p-4">
+                <table class="table table-premium">
+                    <thead>
+                        <tr>
+                            <th>Article ID</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Created By</th>
+                            <th>Created Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold text-muted">#@item.NewsArticleId</td>
+                                <td>
+                                    <div class="fw-semibold text-dark">@item.NewsTitle</div>
+                                    <small class="text-muted">@item.Headline</small>
+                                </td>
+                                <td>
+                                    <span class="badge-custom badge-custom-role-lecturer">
+                                        @(item.Category?.CategoryName ?? "General")
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong>@(item.CreatedBy?.AccountName ?? "System")</strong>
+                                </td>
+                                <td class="fw-semibold">
+                                    @(item.CreatedDate?.ToString("dd MMM yyyy HH:mm") ?? "N/A")
+                                </td>
+                                <td>
+                                    <span class="badge-custom @(item.NewsStatus == true ? "badge-custom-active" : "badge-custom-inactive")">
+                                        @(item.NewsStatus == true ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

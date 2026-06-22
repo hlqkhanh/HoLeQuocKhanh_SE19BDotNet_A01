@@ -1,0 +1,40 @@
+## Ignore Visual Studio temporary files, build results, and user-specific settings
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files (MonoDevelop/Xamarin Studio)
+*.userprefs
+
+# Mono auto-generated files
+mono_crash.*
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Re]leases/
+x64/
+x86/
+build/
+bld/
+[Bin]/[Debug]/
+[Bin]/[Release]/
+bin/
+obj/
+
+# Visual Studio 2015/2017 cache directory
+.vs/
+# Generated user secrets file
+secrets.json
+
+# Rider/IntelliJ files
+.idea/
+
+# OS-specific files
+.DS_Store
+Thumbs.db

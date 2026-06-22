@@ -1,0 +1,80 @@
+@model BusinessObjects.NewsArticle
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    ViewData["Title"] = Model.NewsTitle ?? "Article Details";
+    var role = HttpContextAccessor.HttpContext?.Session.GetString("Role");
+}
+
+<div class="container mt-2 mb-5">
+    <div class="mb-4">
+        <a href="@Url.Action("Index", "News")" class="btn btn-premium btn-premium-secondary">
+            <i class="bi bi-arrow-left"></i> Back to News
+        </a>
+    </div>
+
+    <article class="card-premium p-4 p-md-5">
+        <div class="news-meta mb-3 flex-wrap gap-2 d-flex justify-content-between align-items-center">
+            <span class="badge-custom badge-custom-role-lecturer font-title fs-6">
+                <i class="bi bi-tag-fill"></i> @(Model.Category?.CategoryName ?? "General")
+            </span>
+            <div class="text-muted d-flex gap-3 align-items-center" style="font-size: 0.9rem;">
+                <span>
+                    <i class="bi bi-calendar3"></i> @(Model.CreatedDate?.ToString("dd MMM yyyy HH:mm") ?? "N/A")
+                </span>
+                @if (Model.ModifiedDate.HasValue && Model.ModifiedDate != Model.CreatedDate)
+                {
+                    <span>
+                        <i class="bi bi-pencil-fill"></i> Updated: @Model.ModifiedDate.Value.ToString("dd MMM yyyy HH:mm")
+                    </span>
+                }
+            </div>
+        </div>
+
+        <h1 class="font-title fw-bold text-dark mb-3 display-5">@Model.NewsTitle</h1>
+        <h3 class="text-primary fw-semibold mb-4 fs-4 border-start border-4 border-primary ps-3">@Model.Headline</h3>
+
+        @if (!string.IsNullOrEmpty(Model.NewsImage))
+        {
+            <div class="news-detail-image-wrapper mb-4 shadow-sm" style="overflow: hidden; border-radius: var(--radius-lg); max-height: 400px; width: 100%;">
+                <img src="@Model.NewsImage" alt="@Model.NewsTitle" style="width: 100%; height: auto; max-height: 400px; object-fit: cover;" />
+            </div>
+        }
+
+        <div class="border-top border-bottom py-3 my-4 d-flex justify-content-between align-items-center flex-wrap gap-3 bg-light px-3 rounded">
+            <div class="d-flex align-items-center gap-2">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-weight: bold;">
+                    @(Model.CreatedBy?.AccountName?.Substring(0, 1).ToUpper() ?? "S")
+                </div>
+                <div>
+                    <div class="fw-bold text-dark">@(Model.CreatedBy?.AccountName ?? "System Author")</div>
+                    <small class="text-muted">Staff Writer</small>
+                </div>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.NewsSource))
+            {
+                <div class="text-muted">
+                    <i class="bi bi-globe"></i> Source: <strong>@Model.NewsSource</strong>
+                </div>
+            }
+        </div>
+
+        <div class="news-content text-dark my-4 fs-5" style="white-space: pre-line; line-height: 1.8; text-align: justify;">
+            @Model.NewsContent
+        </div>
+
+        @if (Model.Tags != null && Model.Tags.Any())
+        {
+            <div class="border-top pt-4 mt-4">
+                <h6 class="font-title fw-bold text-muted mb-2"><i class="bi bi-tags-fill"></i> Tags / Keywords:</h6>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var tag in Model.Tags)
+                    {
+                        <span class="badge-custom bg-light border text-secondary font-title fs-7">
+                            #@tag.TagName
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+    </article>
+</div>

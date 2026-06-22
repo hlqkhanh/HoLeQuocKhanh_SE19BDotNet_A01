@@ -1,0 +1,86 @@
+@model BusinessObjects.Category
+
+<div class="modal-header modal-header-custom">
+    <h5 class="modal-title font-title fw-bold" id="categoryModalLabel">
+        @(Model.CategoryId == 0 ? "Create Category" : "Edit Category")
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<form id="categoryForm" asp-action="SaveCategory" asp-controller="Category" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="CategoryId" />
+
+    <div class="modal-body p-4 text-start">
+        <div id="modalError" class="alert alert-danger d-none"></div>
+
+        <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+
+        <div class="form-group">
+            <label asp-for="CategoryName" class="form-label font-title fw-semibold">Category Name</label>
+            <input asp-for="CategoryName" class="form-control form-control-custom" placeholder="e.g. Campus Safety" required />
+            <span asp-validation-for="CategoryName" class="text-danger" style="font-size: 0.85rem;"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="CategoryDesciption" class="form-label font-title fw-semibold">Description</label>
+            <input asp-for="CategoryDesciption" class="form-control form-control-custom" placeholder="Brief description of category" required />
+            <span asp-validation-for="CategoryDesciption" class="text-danger" style="font-size: 0.85rem;"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="ParentCategoryId" class="form-label font-title fw-semibold">Parent Category</label>
+            <select asp-for="ParentCategoryId" class="form-select form-control-custom">
+                <option value="">None (Root Category)</option>
+                @foreach (var parent in ViewBag.ParentCategories as IEnumerable<BusinessObjects.Category>)
+                {
+                    <option value="@parent.CategoryId">@parent.CategoryName</option>
+                }
+            </select>
+            <span asp-validation-for="ParentCategoryId" class="text-danger" style="font-size: 0.85rem;"></span>
+        </div>
+
+        <div class="form-check form-switch mt-3">
+            <input class="form-check-input" type="checkbox" id="IsActive" name="IsActive" value="true" @(Model.IsActive == true ? "checked" : "") />
+            <label class="form-check-label font-title fw-semibold text-dark" for="IsActive">Status Active</label>
+            <input type="hidden" name="IsActive" value="false" /> <!-- fallback for unticked checkbox -->
+        </div>
+    </div>
+
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-premium btn-premium-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-premium btn-premium-primary">
+            <i class="bi bi-check-lg"></i> Save Category
+        </button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        // Handle AJAX Form Submit inside modal
+        $('#categoryForm').on('submit', function (e) {
+            e.preventDefault();
+            var form = $(this);
+            
+            $.ajax({
+                url: form.attr('action'),
+                type: form.attr('method'),
+                data: form.serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        $('#categoryModal').modal('hide');
+                        location.reload();
+                    } else if (response.message) {
+                        $('#modalError').text(response.message).removeClass('d-none');
+                    } else {
+                        // If it returns partial view HTML (meaning validation errors)
+                        $('#categoryModalContent').html(response);
+                    }
+                },
+                error: function () {
+                    $('#modalError').text("An error occurred. Please try again.").removeClass('d-none');
+                }
+            });
+        });
+    });
+</script>
